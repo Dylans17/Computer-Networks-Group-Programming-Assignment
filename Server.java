@@ -33,7 +33,7 @@
 import java.net.*;
 import java.io.*;
 
-public class EchoServer {
+public class Server {
     public static void main(String[] args) throws IOException {
 
         if (args.length != 1) {

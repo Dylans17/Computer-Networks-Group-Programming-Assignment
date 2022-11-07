@@ -33,41 +33,47 @@
 import java.io.*;
 import java.net.*;
 
-public class EchoClient {
-    public static void main(String[] args) throws IOException {
+public class Client {
+  public static void main(String[] args) {
+    //simply a reduced version of Echo Client that sends the three requests in sequence.
+    String hostName = "localhost";
+    int portNumber = 4000;
 
-        if (args.length != 2) {
-            System.err.println(
-                "Usage: java EchoClient <host name> <port number>");
-            System.exit(1);
-        }
-
-        String hostName = args[0];
-        int portNumber = Integer.parseInt(args[1]);
-
-        try (
-            Socket echoSocket = new Socket(hostName, portNumber);
-            PrintWriter out =
-                new PrintWriter(echoSocket.getOutputStream(), true);
-            BufferedReader in =
-                new BufferedReader(
-                    new InputStreamReader(echoSocket.getInputStream()));
-            BufferedReader stdIn =
-                new BufferedReader(
-                    new InputStreamReader(System.in))
-        ) {
-            String userInput;
-            while ((userInput = stdIn.readLine()) != null) {
-                out.println(userInput);
-                System.out.println("echo: " + in.readLine());
-            }
-        } catch (UnknownHostException e) {
-            System.err.println("Don't know about host " + hostName);
-            System.exit(1);
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to " +
-                hostName);
-            System.exit(1);
-        }
+    try (
+      Socket echoSocket = new Socket(hostName, portNumber);
+      PrintWriter out =
+        new PrintWriter(echoSocket.getOutputStream(), true);
+      BufferedReader in =
+        new BufferedReader(
+          new InputStreamReader(echoSocket.getInputStream()));
+    ) {
+      request(out, in, "Date");
+      request(out, in, "Uptime");
+      request(out, in, "Memory");
+    } catch (UnknownHostException e) {
+      System.err.println("Don't know about host " + hostName);
+      System.exit(1);
+    } catch (IOException e) {
+      System.err.println("Couldn't get I/O for the connection to " +
+        hostName);
+      System.exit(1);
     }
+  }
+
+  public static void request(PrintWriter socketOut, BufferedReader socketIn, String messageString) throws IOException {
+    System.out.printf("Sending \"%s\" to server\n");
+    String responseString = sendReqString(socketOut, socketIn, messageString);
+    System.out.println("Response: " + responseString);
+  }
+
+  public static String sendReqString(PrintWriter socketOut, BufferedReader socketIn, String messageString) throws IOException {
+    socketOut.println(messageString);
+    String result = "";
+    String answer;
+    //similar solution to what's provided in pdf
+    while ((answer = socketIn.readLine()) != null) {
+      result += answer;
+    }
+    return result;
+  }
 }
