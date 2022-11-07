@@ -8,7 +8,7 @@ public class Server {
     ServerRequestManager mngr = new ServerRequestManager(); 
     mngr.addHandler("Date", new ServerExecHandler("date", false));
     mngr.addHandler("Uptime", new ServerExecHandler("uptime", false));
-    mngr.addHandler("Memory", new ServerExecHandler("memory", false));
+    mngr.addHandler("Memory", new ServerExecHandler("free", false));
     try (
       ServerSocket serverSocket = new ServerSocket(portNumber);
     ) {

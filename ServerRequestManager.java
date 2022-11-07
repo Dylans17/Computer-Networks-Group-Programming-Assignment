@@ -27,23 +27,20 @@ public class ServerRequestManager {
     }
     PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
     BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-    String input = in.readLine();
-    String inputline;
-    while ((inputline = in.readLine()) != null) {
-      inputline = inputline.strip();
-      input += "\n" + inputline;
+    String message;
+    while ((message = RequestHeaderHandler.readMessage(in)) != null) {
+      if (logging) {
+        System.out.println("Got message from socket:\n" + message);
+      }
+      String serverResponse = handleRequestMessage(message);
+      RequestHeaderHandler.writeMessage(out, serverResponse);
     }
-    if (logging) {
-      System.out.println("Got request from socket:\n" + inputline);
-    }
-    handleInput(input, out);
-    clientSocket.close();
     if (logging) {
       System.out.println("Socket Closed");
     }
   }
 
-  private void handleInput(String input, PrintWriter out) throws IOException {
+  private String handleRequestMessage(String input) {
     //line parsing
     int space = input.indexOf(' ');
     String handlerName;
@@ -58,10 +55,10 @@ public class ServerRequestManager {
     }
     ServerRequestHandler handler = handlerMap.get(handlerName);
     if (handler == null) {
-      out.printf("Error: Command \"%s\" not found!\n", handlerName);
+      return String.format("Server Error: Command \"%s\" not found!\n", handlerName);
     }
     else {
-      handler.handle(args, out);
+      return handler.handle(args);
     }
   }
 }

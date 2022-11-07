@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 
 public class ServerExecHandler implements ServerRequestHandler {
   private boolean includeArgs;
@@ -13,16 +12,26 @@ public class ServerExecHandler implements ServerRequestHandler {
   }
 
   @Override
-  public void handle(String args, PrintWriter out) throws IOException {
+  public String handle(String args) {
     String command = this.command;
     if (includeArgs) {
       command = String.format("%s %s", command, args);
     }
-    Process process = Runtime.getRuntime().exec(command);
-    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-    String output;
-    while ((output = br.readLine()) != null) {
-      out.println(output);
+    
+    try {
+      Process process = Runtime.getRuntime().exec(command);
+      BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      String result = "";
+      String output;
+      while ((output = br.readLine()) != null) {
+        result += output + "\n";
+      }
+      return result;
+    }
+    catch (IOException e) {
+      String message = String.format("Error while running \"%s\": %s\n", command, e.getMessage());
+      System.err.println(message);
+      return message;
     }
   }
 }
